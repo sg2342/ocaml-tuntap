@@ -117,6 +117,8 @@ get_macaddr(value devname)
 #elif (defined(__APPLE__) && defined(__MACH__)) || defined(__FreeBSD__)
 #include <net/if_dl.h>
 #include <ifaddrs.h>
+#define        TUNSIFHEAD      _IOW('t', 96, int)
+
 
 static int
 tun_alloc(char *dev, int kind, int pi, int persist, int user, int group)
@@ -131,6 +133,11 @@ tun_alloc(char *dev, int kind, int pi, int persist, int user, int group)
   fd = open(name, O_RDWR);
   if (fd == -1)
     tun_raise_error("open", -1);
+  if (pi) {
+    int flag = 1;
+    if (ioctl(fd, TUNSIFHEAD, &flag) == -1)
+      tun_raise_error("ioctl", -1);
+  }
   return fd;
 }
 
